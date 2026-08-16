@@ -21,12 +21,12 @@ export function Hero({ onOpenWaitlist }) {
         </div>
 
         <h1 className="hero-title" id="hero-title">
-          El IDE de Voz para Ingeniería Real.<br />
-          <span className="hero-gradient-text">Ahora 100% Nativo en Windows.</span>
+          {t.heroTitlePart1}<br />
+          <span className="hero-gradient-text">{t.heroTitlePart2} <span className="it">{t.heroTitlePart2Italic}</span></span>
         </h1>
 
         <p className="hero-description" id="hero-description">
-          Antes requería Docker y máquinas virtuales pesadas. Hoy Openbase Coder se ejecuta directamente en el kernel de Windows: supervisor de servicios Win32 desacoplado, motor de voz LiveKit en tiempo real, integración fluida con PowerShell y cero latencia.
+          {t.heroDescription}
         </p>
 
         <div className="hero-actions">
@@ -66,7 +66,7 @@ export function Hero({ onOpenWaitlist }) {
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
             <span className="copy-tooltip" id="hero-copy-tooltip">
-              {copied ? "¡Copiado!" : "Copiar"}
+              {copied ? (t.heroCopied || "¡Copiado!") : (t.heroCopyHint || "Copiar")}
             </span>
           </button>
         </div>
@@ -75,22 +75,22 @@ export function Hero({ onOpenWaitlist }) {
         <div className="tech-spec-bar" id="tech-spec-bar">
           <div className="spec-item">
             <span className="spec-label" id="spec-engine-lbl">{t.specEngine}</span>
-            <span className="spec-value">Win32 Supervisor + JSON Units</span>
+            <span className="spec-value">{t.specEngineVal}</span>
           </div>
           <div className="spec-divider"></div>
           <div className="spec-item">
             <span className="spec-label" id="spec-memory-lbl">{t.specMemory}</span>
-            <span className="spec-value highlight-green">&lt; 45 MB en reposo (-88%)</span>
+            <span className="spec-value highlight-green">{t.specMemoryVal}</span>
           </div>
           <div className="spec-divider"></div>
           <div className="spec-item">
             <span className="spec-label" id="spec-voice-lbl">{t.specVoice}</span>
-            <span className="spec-value highlight-blue">Sub-20ms DirectSound / WASAPI</span>
+            <span className="spec-value highlight-blue">{t.specVoiceVal}</span>
           </div>
           <div className="spec-divider"></div>
           <div className="spec-item">
             <span className="spec-label" id="spec-docker-lbl">{t.specDocker}</span>
-            <span className="spec-value highlight-green">0% (Innecesario)</span>
+            <span className="spec-value highlight-green">{t.specDockerVal}</span>
           </div>
         </div>
       </div>
