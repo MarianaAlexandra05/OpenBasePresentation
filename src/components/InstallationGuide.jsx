@@ -1,141 +1,141 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Terminal, Copy, Check, Sparkles, Download, CheckCircle2, Monitor } from 'lucide-react';
 
 export function InstallationGuide() {
   const { t } = useLanguage();
-  const [activeInstallTab, setActiveInstallTab] = useState('uv'); // 'uv' | 'winget' | 'msi' | 'ps'
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [activeTab, setActiveTab] = useState('uv'); // 'uv' | 'winget' | 'msi' | 'ps'
+  const [copiedIdx, setCopiedIdx] = useState(null);
 
-  const copyToClipboard = (text, idx) => {
+  const handleCopy = (text, idx) => {
     navigator.clipboard.writeText(text);
-    setCopiedIndex(idx);
-    setTimeout(() => setCopiedIndex(null), 2500);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2000);
   };
 
-  const steps = [
-    {
-      title: t.step1Title || "Instala la CLI nativa con uv",
-      desc: t.step1Desc || "Ejecuta en PowerShell como usuario normal (sin permisos de administrador requeridos):",
-      cmd: activeInstallTab === 'uv'
-        ? "uv tool install openbase-coder"
-        : activeInstallTab === 'winget'
-        ? "winget install Openbase.Coder"
-        : activeInstallTab === 'ps'
-        ? "irm https://openbase.cloud/install.ps1 | iex"
-        : "Descargar instalador: Openbase-Coder-v2.4-x64.msi"
-    },
-    {
-      title: t.step2Title || "Ejecuta el Asistente de Configuración Guiada",
-      desc: t.step2Desc || "Configura tu proveedor de voz (Cartesia/ElevenLabs), backend de código y autenticación:",
-      cmd: "openbase setup"
-    },
-    {
-      title: t.step3Title || "Inicia los Servicios en Segundo Plano",
-      desc: t.step3Desc || "El supervisor Win32 levantará LiveKit Server y la API automáticamente:",
-      cmd: "openbase run --detached"
+  const getStep1Cmd = () => {
+    switch (activeTab) {
+      case 'uv': return "uv tool install openbase-coder";
+      case 'winget': return "winget install Openbase.Coder";
+      case 'ps': return "irm https://openbase.cloud/install.ps1 | iex";
+      case 'msi': return "msiexec /i OpenbaseCoder-v2.4-x64.msi /quiet";
+      default: return "uv tool install openbase-coder";
     }
-  ];
+  };
 
   return (
-    <section id="install" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-left">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 text-sky-400 text-xs font-bold tracking-widest uppercase mb-3">
-          <span className="w-1.5 h-1.5 bg-sky-400 rounded-sm"></span>
-          <span>{t.installTag}</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-extrabold text-white">
-          {t.installTitle}
-        </h2>
-        <p className="text-slate-300 text-base sm:text-lg mt-4 leading-relaxed">
+    <section className="quickstart-section" id="quickstart-section">
+      <div className="section-header">
+        <span className="section-tag" id="install-tag">{t.installTag}</span>
+        <h2 className="section-title" id="install-title">{t.installTitle}</h2>
+        <p className="section-desc" id="install-desc">
           {t.installDesc}
         </p>
+      </div>
 
+      <div className="install-switcher-box">
         {/* Method Switcher Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
-          <button
-            onClick={() => setActiveInstallTab('uv')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all border ${
-              activeInstallTab === 'uv'
-                ? 'bg-blue-600/30 border-sky-400 text-white shadow-lg shadow-blue-500/20'
-                : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-            }`}
+        <div className="install-tabs" role="tablist">
+          <button 
+            onClick={() => setActiveTab('uv')}
+            className={`install-tab-btn ${activeTab === 'uv' ? 'active' : ''}`}
+            role="tab"
           >
-            Astral uv (Recomendado)
+            uv (Recomendado)
           </button>
-
-          <button
-            onClick={() => setActiveInstallTab('winget')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all border ${
-              activeInstallTab === 'winget'
-                ? 'bg-blue-600/30 border-sky-400 text-white shadow-lg shadow-blue-500/20'
-                : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-            }`}
+          <button 
+            onClick={() => setActiveTab('winget')}
+            className={`install-tab-btn ${activeTab === 'winget' ? 'active' : ''}`}
+            role="tab"
           >
-            Windows Package Manager (winget)
+            winget / Windows Package
           </button>
-
-          <button
-            onClick={() => setActiveInstallTab('ps')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all border ${
-              activeInstallTab === 'ps'
-                ? 'bg-blue-600/30 border-sky-400 text-white shadow-lg shadow-blue-500/20'
-                : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-            }`}
+          <button 
+            onClick={() => setActiveTab('ps')}
+            className={`install-tab-btn ${activeTab === 'ps' ? 'active' : ''}`}
+            role="tab"
           >
-            PowerShell One-Liner
+            PowerShell Script
           </button>
-
-          <button
-            onClick={() => setActiveInstallTab('msi')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all border ${
-              activeInstallTab === 'msi'
-                ? 'bg-blue-600/30 border-sky-400 text-white shadow-lg shadow-blue-500/20'
-                : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white'
-            }`}
+          <button 
+            onClick={() => setActiveTab('msi')}
+            className={`install-tab-btn ${activeTab === 'msi' ? 'active' : ''}`}
+            role="tab"
           >
             Instalador Windows .MSI
           </button>
         </div>
-      </div>
 
-      {/* 3 Step Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {steps.map((step, idx) => (
-          <div
-            key={idx}
-            className="glass-card p-6 sm:p-7 rounded-2xl border border-white/[0.1] flex flex-col justify-between relative overflow-hidden"
-          >
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-sky-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs font-mono mb-4">
-                0{idx + 1}
-              </div>
-
-              <h3 className="text-base font-bold text-white mb-2">{step.title}</h3>
-              <p className="text-xs text-slate-300 mb-4 leading-relaxed">{step.desc}</p>
-            </div>
-
-            <div className="mt-4">
-              <div className="p-3 rounded-xl bg-slate-950/90 border border-white/[0.08] flex items-center justify-between gap-2 shadow-inner">
-                <div className="flex items-center gap-2 min-w-0 font-mono text-xs text-sky-300">
-                  <span className="text-slate-500 shrink-0">&gt;</span>
-                  <code className="truncate">{step.cmd}</code>
-                </div>
-                <button
-                  onClick={() => copyToClipboard(step.cmd, idx)}
-                  className="p-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-400 hover:text-white shrink-0 cursor-pointer transition-colors"
-                  title="Copiar comando"
+        {/* Panel Body */}
+        <div className="install-panel-body">
+          {/* Step 1 */}
+          <div className="install-step-box">
+            <div className="step-num">1</div>
+            <div className="step-details">
+              <h4 id="step1-title">{t.step1Title}</h4>
+              <p id="step1-desc">{t.step1Desc}</p>
+              <div className="code-copy-row">
+                <code>{getStep1Cmd()}</code>
+                <button 
+                  onClick={() => handleCopy(getStep1Cmd(), 1)}
+                  className={`copy-btn mini ${copiedIdx === 1 ? 'copied' : ''}`}
+                  aria-label="Copiar comando paso 1"
                 >
-                  {copiedIndex === idx ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
+                  <svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span className="copy-tooltip">{copiedIdx === 1 ? "¡Copiado!" : "Copiar"}</span>
                 </button>
               </div>
             </div>
           </div>
-        ))}
+
+          {/* Step 2 */}
+          <div className="install-step-box">
+            <div className="step-num">2</div>
+            <div className="step-details">
+              <h4 id="step2-title">{t.step2Title}</h4>
+              <p id="step2-desc">{t.step2Desc}</p>
+              <div className="code-copy-row">
+                <code>openbase-coder setup</code>
+                <button 
+                  onClick={() => handleCopy("openbase-coder setup", 2)}
+                  className={`copy-btn mini ${copiedIdx === 2 ? 'copied' : ''}`}
+                  aria-label="Copiar comando paso 2"
+                >
+                  <svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span className="copy-tooltip">{copiedIdx === 2 ? "¡Copiado!" : "Copiar"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="install-step-box">
+            <div className="step-num">3</div>
+            <div className="step-details">
+              <h4 id="step3-title">{t.step3Title}</h4>
+              <p id="step3-desc">{t.step3Desc}</p>
+              <div className="code-copy-row">
+                <code>openbase-coder services start</code>
+                <button 
+                  onClick={() => handleCopy("openbase-coder services start", 3)}
+                  className={`copy-btn mini ${copiedIdx === 3 ? 'copied' : ''}`}
+                  aria-label="Copiar comando paso 3"
+                >
+                  <svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span className="copy-tooltip">{copiedIdx === 3 ? "¡Copiado!" : "Copiar"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

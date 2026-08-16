@@ -1,348 +1,379 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { mockSupervisorUnits, terminalCommands } from '../data/mockData';
-import { Mic, Terminal, Activity, Radio, Play, Check, Volume2, Shield, PlayCircle, RefreshCw, Cpu, Database } from 'lucide-react';
 
 export function WindowsStudio() {
   const { lang, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('voice'); // 'voice' | 'terminal' | 'supervisor'
-  
-  // Voice Tab State
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [voiceVolume, setVoiceVolume] = useState(65);
-  const [voiceStatus, setVoiceStatus] = useState('ready');
+  const [isAudioActive, setIsAudioActive] = useState(true);
+  const [scenarioIdx, setScenarioIdx] = useState(0);
+  const [approved, setApproved] = useState(false);
 
-  // Terminal Tab State
-  const [terminalHistory, setTerminalHistory] = useState([
-    "PowerShell 7.4.2 (Windows x86_64)",
-    "Loading Openbase Coder Win32 Kernel Supervisor...",
-    "Type 'help' or click any prompt pill below to run a command.\n"
-  ]);
-  const [terminalInput, setTerminalInput] = useState('');
-  const terminalEndRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  const runCommand = (cmd) => {
-    const trimmed = cmd.trim();
-    if (!trimmed) return;
-
-    if (trimmed === 'clear' || trimmed === 'cls') {
-      setTerminalHistory([]);
-      return;
+  const scenarios = [
+    {
+      user: "Despachador, agrega el nuevo supervisor de servicios nativo para Windows y valida que livekit-server.exe arranque automáticamente.",
+      userEn: "Dispatcher, add the new native service supervisor for Windows and verify livekit-server.exe boots automatically.",
+      agent: "Entendido. Creé el descriptor JSON en ~/.openbase/windows-units/livekit-server.json y el proceso detached supervisor. Ejecutando verificación de puertos con netstat en Windows...",
+      agentEn: "Understood. Created the JSON descriptor in ~/.openbase/windows-units/livekit-server.json and spawned the detached process supervisor. Validating socket bindings via Win32 netstat...",
+      file: "openbase_coder_cli\\services\\windows.py",
+      addStats: "+28",
+      delStats: "-4",
+      actionDesc: "Super Agent modificó windows.py y pasó 42 tests de pytest en Windows",
+      actionDescEn: "Super Agent modified windows.py and passed 42 pytest test cases on Windows",
+      codeHtml: `<span class="code-line num">38</span><span class="code-line code-comment"># Detach the supervisor so it outlives the CLI invocation</span>
+<span class="code-line num">39</span><span class="code-line code-dim">_DETACHED = 0x00000008 | 0x00000200  <span class="code-comment"># DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP</span></span>
+<span class="code-line num">40</span><span class="code-line code-dim"></span>
+<span class="code-line num">41</span><span class="code-line code-add"><span class="diff-marker">+</span><span class="code-kw">def</span> <span class="code-fn">start_service_windows</span>(svc: ServiceDefinition) -&gt; <span class="code-type">bool</span>:</span>
+<span class="code-line num">42</span><span class="code-line code-add"><span class="diff-marker">+</span>    <span class="code-str">"""Spawn Windows background runner with JSON unit descriptor."""</span></span>
+<span class="code-line num">43</span><span class="code-line code-add"><span class="diff-marker">+</span>    unit = unit_path(svc)</span>
+<span class="code-line num">44</span><span class="code-line code-add"><span class="diff-marker">+</span>    <span class="code-kw">if not</span> unit.exists():</span>
+<span class="code-line num">45</span><span class="code-line code-add"><span class="diff-marker">+</span>        write_unit_descriptor(svc)</span>
+<span class="code-line num">46</span><span class="code-line code-add"><span class="diff-marker">+</span>    proc = subprocess.Popen(</span>
+<span class="code-line num">47</span><span class="code-line code-add"><span class="diff-marker">+</span>        [sys.executable, <span class="code-str">"-m"</span>, <span class="code-str">"openbase_coder_cli.services.windows_runner"</span>, str(unit)],</span>
+<span class="code-line num">48</span><span class="code-line code-add"><span class="diff-marker">+</span>        creationflags=_DETACHED,</span>
+<span class="code-line num">49</span><span class="code-line code-add"><span class="diff-marker">+</span>        close_fds=<span class="code-kw">True</span>,</span>
+<span class="code-line num">50</span><span class="code-line code-add"><span class="diff-marker">+</span>    )</span>
+<span class="code-line num">51</span><span class="code-line code-add"><span class="diff-marker">+</span>    <span class="code-kw">return</span> wait_for_pid(svc)</span>`
+    },
+    {
+      user: "Revisa la descarga del binario de LiveKit Server y asegura compatibilidad con arquitecturas x86_64 y ARM64 en Windows.",
+      userEn: "Verify LiveKit Server binary download and ensure compatibility with both x86_64 and ARM64 on Windows.",
+      agent: "Alineado. Implementé detección de arquitectura vía platform.machine() y enlace al release oficial de livekit-server-windows-amd64.tar.gz.",
+      agentEn: "Aligned. Implemented architecture detection via platform.machine() and bound official livekit-server-windows-amd64.tar.gz release asset.",
+      file: "openbase_coder_cli\\services\\livekit_bin.py",
+      addStats: "+19",
+      delStats: "-2",
+      actionDesc: "Super Agent descargó livekit-server.exe (38 MB) y validó suma SHA-256",
+      actionDescEn: "Super Agent fetched livekit-server.exe (38 MB) and verified SHA-256 checksum",
+      codeHtml: `<span class="code-line num">12</span><span class="code-line code-comment"># Native Windows LiveKit binary asset resolution</span>
+<span class="code-line num">13</span><span class="code-line code-add"><span class="diff-marker">+</span><span class="code-kw">def</span> <span class="code-fn">get_windows_binary_url</span>() -&gt; <span class="code-type">str</span>:</span>
+<span class="code-line num">14</span><span class="code-line code-add"><span class="diff-marker">+</span>    arch = platform.machine().lower()</span>
+<span class="code-line num">15</span><span class="code-line code-add"><span class="diff-marker">+</span>    target = <span class="code-str">"windows_arm64"</span> <span class="code-kw">if</span> <span class="code-str">"arm"</span> <span class="code-kw">in</span> arch <span class="code-kw">else</span> <span class="code-str">"windows_amd64"</span></span>
+<span class="code-line num">16</span><span class="code-line code-add"><span class="diff-marker">+</span>    <span class="code-kw">return</span> f<span class="code-str">"https://github.com/livekit/livekit/releases/download/v1.8.2/livekit_1.8.2_{target}.tar.gz"</span></span>`
+    },
+    {
+      user: "Configura el bloqueo concurrente de archivos para los agentes usando las APIs nativas de Windows msvcrt.",
+      userEn: "Configure concurrent file locking for multi-agent workflows using native Windows msvcrt APIs.",
+      agent: "Listo. Reemplacé fcntl.flock por msvcrt.locking con política de 5 reintentos y retroceso exponencial sobre sistemas NTFS.",
+      agentEn: "Done. Replaced fcntl.flock with msvcrt.locking featuring 5 adaptive retries and exponential backoff on NTFS.",
+      file: "openbase_coder_cli\\utils\\locks.py",
+      addStats: "+34",
+      delStats: "-12",
+      actionDesc: "Pruebas de concurrencia NTFS completadas: 100 agentes concurrentes sin colisión",
+      actionDescEn: "NTFS concurrency tests passed: 100 parallel agent workers with zero lock collisions",
+      codeHtml: `<span class="code-line num">22</span><span class="code-line code-comment"># Cross-platform concurrency lock for NTFS filesystems</span>
+<span class="code-line num">23</span><span class="code-line code-add"><span class="diff-marker">+</span><span class="code-kw">import</span> msvcrt</span>
+<span class="code-line num">24</span><span class="code-line code-add"><span class="diff-marker">+</span><span class="code-kw">def</span> <span class="code-fn">windows_flock</span>(fd, flags, retries=5):</span>
+<span class="code-line num">25</span><span class="code-line code-add"><span class="diff-marker">+</span>    <span class="code-kw">for</span> attempt <span class="code-kw">in</span> range(retries):</span>
+<span class="code-line num">26</span><span class="code-line code-add"><span class="diff-marker">+</span>        <span class="code-kw">try</span>:</span>
+<span class="code-line num">27</span><span class="code-line code-add"><span class="diff-marker">+</span>            msvcrt.locking(fd.fileno(), msvcrt.LK_NBLCK, 1)</span>
+<span class="code-line num">28</span><span class="code-line code-add"><span class="diff-marker">+</span>            <span class="code-kw">return</span> <span class="code-kw">True</span></span>
+<span class="code-line num">29</span><span class="code-line code-add"><span class="diff-marker">+</span>        <span class="code-kw">except</span> OSError:</span>
+<span class="code-line num">30</span><span class="code-line code-add"><span class="diff-marker">+</span>            time.sleep(0.05 * (2 ** attempt))</span>`
     }
+  ];
 
-    const output = terminalCommands[trimmed] || [
-      `Command '${trimmed}' executed successfully in 42ms (Exit code 0).`
-    ];
+  const current = scenarios[scenarioIdx];
 
-    setTerminalHistory((prev) => [
-      ...prev,
-      `PS C:\\Users\\alexa\\openbase> ${trimmed}`,
-      ...output,
-      ""
-    ]);
-  };
-
-  const handleTerminalSubmit = (e) => {
-    e.preventDefault();
-    runCommand(terminalInput);
-    setTerminalInput('');
-  };
-
+  // Canvas Waveform Animation
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [terminalHistory]);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let phase = 0;
+    let animId;
 
-  const simulateSpeech = () => {
-    setIsSpeaking(true);
-    setVoiceStatus('processing');
-    
-    // Play synthetic beep audio via Web Audio API if available
-    try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.5);
-    } catch (e) {
-      // Audio context might be restricted before user interaction
-    }
+    const renderWave = () => {
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
 
-    setTimeout(() => {
-      setIsSpeaking(false);
-      setVoiceStatus('success');
-      setTimeout(() => setVoiceStatus('ready'), 3000);
-    }, 2400);
+      const barCount = 42;
+      const barWidth = width / barCount - 3;
+
+      for (let i = 0; i < barCount; i++) {
+        let barHeight;
+        if (isAudioActive) {
+          const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
+          const bellFactor = Math.cos(distFromCenter * (Math.PI / 2));
+          const wave1 = Math.sin(phase * 3 + i * 0.4);
+          const wave2 = Math.cos(phase * 2 + i * 0.2);
+          barHeight = Math.max(6, (20 + (wave1 * 15 + wave2 * 12)) * bellFactor);
+        } else {
+          barHeight = 4;
+        }
+
+        const x = i * (barWidth + 3);
+        const y = (height - barHeight) / 2;
+
+        const grad = ctx.createLinearGradient(0, y, 0, y + barHeight);
+        grad.addColorStop(0, '#38bdf8');
+        grad.addColorStop(0.5, '#0ea5e9');
+        grad.addColorStop(1, '#0078D4');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, barWidth, barHeight, 3);
+        } else {
+          ctx.rect(x, y, barWidth, barHeight);
+        }
+        ctx.fill();
+      }
+
+      phase += 0.04;
+      animId = requestAnimationFrame(renderWave);
+    };
+
+    renderWave();
+    return () => cancelAnimationFrame(animId);
+  }, [isAudioActive]);
+
+  const handleNextScenario = () => {
+    setScenarioIdx((prev) => (prev + 1) % scenarios.length);
+    setApproved(false);
   };
 
   return (
-    <section id="demo" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
-          <Activity className="w-3.5 h-3.5 text-sky-400" />
-          <span>{t.studioTag}</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-extrabold text-white">
-          {t.studioTitle}
-        </h2>
-        <p className="text-slate-300 text-base sm:text-lg mt-3 max-w-2xl mx-auto">
-          {t.studioDesc}
+    <section className="demo-section" id="demo">
+      <div className="section-header">
+        <span className="section-tag" id="demo-section-tag">{t.demoSectionTag}</span>
+        <h2 className="section-title" id="demo-section-title">{t.demoSectionTitle}</h2>
+        <p className="section-desc" id="demo-section-desc">
+          {t.demoSectionDesc}
         </p>
       </div>
 
-      {/* Windows 11 App Window Frame */}
-      <div className="win-window border border-white/[0.12] rounded-2xl shadow-2xl overflow-hidden max-w-5xl mx-auto">
-        {/* Title Bar with Tabs */}
-        <div className="win-titlebar flex-wrap gap-2">
-          {/* Windows Window Controls */}
-          <div className="flex items-center gap-2 mr-4">
-            <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
-            <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>
-            <div className="w-3 h-3 rounded-full bg-emerald-500/80"></div>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto">
-            <button
+      {/* Windows 11 Styled App Mockup */}
+      <div className="windows-app-window" id="windows-app-window">
+        {/* Title Bar */}
+        <div className="win-title-bar">
+          <div className="win-tabs-bar" role="tablist">
+            <button 
               onClick={() => setActiveTab('voice')}
-              className={`win-tab-btn ${activeTab === 'voice' ? 'active' : ''}`}
+              className={`win-tab ${activeTab === 'voice' ? 'active' : ''}`}
+              role="tab" 
+              aria-selected={activeTab === 'voice'}
             >
-              <Mic className="w-3.5 h-3.5 text-sky-400" />
-              <span>{t.tabVoice}</span>
+              <span className="tab-indicator voice-pulse"></span>
+              <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+              <span id="tab-title-voice">{t.tabTitleVoice}</span>
             </button>
 
-            <button
+            <button 
               onClick={() => setActiveTab('terminal')}
-              className={`win-tab-btn ${activeTab === 'terminal' ? 'active' : ''}`}
+              className={`win-tab ${activeTab === 'terminal' ? 'active' : ''}`}
+              role="tab" 
+              aria-selected={activeTab === 'terminal'}
             >
-              <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{t.tabTerminal}</span>
+              <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span id="tab-title-terminal">{t.tabTitleTerminal}</span>
             </button>
 
-            <button
+            <button 
               onClick={() => setActiveTab('supervisor')}
-              className={`win-tab-btn ${activeTab === 'supervisor' ? 'active' : ''}`}
+              className={`win-tab ${activeTab === 'supervisor' ? 'active' : ''}`}
+              role="tab" 
+              aria-selected={activeTab === 'supervisor'}
             >
-              <Shield className="w-3.5 h-3.5 text-purple-400" />
-              <span>{t.tabSupervisor}</span>
+              <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+              </svg>
+              <span id="tab-title-supervisor">{t.tabTitleSupervisor}</span>
             </button>
           </div>
 
-          {/* Host indicator */}
-          <div className="ml-auto hidden sm:flex items-center gap-2 text-[11px] font-mono text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>WIN32 SUPERVISOR : ONLINE</span>
+          <div className="win-controls">
+            <span className="win-btn win-minimize"></span>
+            <span className="win-btn win-maximize"></span>
+            <span className="win-btn win-close"></span>
           </div>
         </div>
 
-        {/* Tab Content 1: Voice Call & LiveKit WebRTC Dispatcher */}
-        {activeTab === 'voice' && (
-          <div className="p-6 sm:p-8 bg-[#0B0F1A]/90">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-              
-              {/* Left Column: Live Call Stage */}
-              <div className="flex-1 w-full space-y-6">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/80 border border-white/[0.08]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
-                      <Radio className="w-5 h-5 animate-pulse" />
+        {/* Window Body */}
+        <div className="win-window-body">
+          
+          {/* TAB 1: Voice Studio */}
+          {activeTab === 'voice' && (
+            <div className="tab-panel active">
+              <div className="voice-studio-grid">
+                
+                {/* Left: Voice Surface */}
+                <div className="call-surface-panel">
+                  <div className="call-status-header">
+                    <div className="call-indicator-group">
+                      <span className="live-dot"></span>
+                      <span className="call-state-text" id="call-state-text">{t.callStateText}</span>
                     </div>
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-wider text-sky-400">
-                        {t.voiceActiveBadge}
-                      </div>
-                      <div className="text-sm font-bold text-white">
-                        WebRTC Room: #openbase-windows-live
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-semibold border border-emerald-500/20">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>WASAPI 16ms</span>
-                  </div>
-                </div>
-
-                {/* Animated Waveform Synthesizer */}
-                <div className="h-32 bg-slate-950/80 rounded-xl border border-white/[0.06] p-4 flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex justify-between items-center text-xs font-mono text-slate-400">
-                    <span>DirectSound Audio Buffer (PCM 24-bit / 48kHz)</span>
-                    <span className="text-sky-400">{isSpeaking ? "TRANSMITTING..." : "LISTENING..."}</span>
+                    <span className="call-timer" id="call-timer-counter">04:18</span>
                   </div>
 
-                  {/* Waveform Bars */}
-                  <div className="flex items-center justify-center gap-1.5 h-16">
-                    {Array.from({ length: 36 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-1 rounded-full transition-all duration-150 ${
-                          isSpeaking 
-                            ? 'bg-gradient-to-t from-blue-500 to-sky-400 h-12' 
-                            : 'bg-slate-700/60 h-2'
-                        }`}
-                        style={{
-                          height: isSpeaking ? `${Math.max(6, Math.sin(i * 0.4) * 45 + 15)}px` : '4px'
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between items-center text-[11px] text-slate-500 font-mono">
-                    <span>Rx: 142.8 kbps</span>
-                    <span>Tx: 128.0 kbps (Opus)</span>
-                  </div>
-                </div>
-
-                {/* Action Trigger */}
-                <div className="flex flex-wrap gap-4">
-                  <button
-                    onClick={simulateSpeech}
-                    disabled={isSpeaking}
-                    className="btn-primary flex-1 py-3 text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-500/25"
-                  >
-                    <PlayCircle className="w-4 h-4" />
-                    <span>{isSpeaking ? "Procesando audio..." : t.simNewVoiceBtn}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Right Column: Live Event Stream */}
-              <div className="w-full lg:w-80 bg-slate-900/60 rounded-xl border border-white/[0.08] p-4 space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
-                  <span>Eventos del Despachador</span>
-                  <span className="text-[10px] text-emerald-400">WIN32 OK</span>
-                </div>
-
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
-                    <div className="text-slate-400 text-[10px]">17:24:02 · Audio Packet</div>
-                    <div className="text-slate-200 mt-0.5">WASAPI stream capture initialized</div>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                    <div className="text-sky-400 text-[10px]">17:24:04 · NLP Dispatcher</div>
-                    <div className="text-slate-200 mt-0.5">Route intent: <span className="text-sky-300">"pytest test_auth.py"</span></div>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <div className="text-emerald-400 text-[10px]">17:24:06 · Agent Completion</div>
-                    <div className="text-emerald-200 mt-0.5">24 test cases verified in 1.4s</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* Tab Content 2: PowerShell 7 Terminal */}
-        {activeTab === 'terminal' && (
-          <div className="p-6 bg-[#07090E]">
-            {/* Quick Command Pills */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="text-xs text-slate-400 font-mono self-center mr-1">Probar comando:</span>
-              {Object.keys(terminalCommands).map((cmd) => (
-                <button
-                  key={cmd}
-                  onClick={() => runCommand(cmd)}
-                  className="px-2.5 py-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-sky-300 font-mono text-xs cursor-pointer transition-all"
-                >
-                  {cmd}
-                </button>
-              ))}
-            </div>
-
-            {/* Terminal Screen */}
-            <div className="bg-black/90 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-300 h-80 overflow-y-auto shadow-inner">
-              {terminalHistory.map((line, i) => (
-                <div key={i} className="whitespace-pre-wrap leading-relaxed">
-                  {line.startsWith("PS ") ? (
-                    <span className="text-sky-400 font-semibold">{line}</span>
-                  ) : line.includes("[PASS]") || line.includes("PASSED") ? (
-                    <span className="text-emerald-400">{line}</span>
-                  ) : line.includes("Openbase Coder") ? (
-                    <span className="text-blue-400 font-bold">{line}</span>
-                  ) : (
-                    line
-                  )}
-                </div>
-              ))}
-              <div ref={terminalEndRef} />
-            </div>
-
-            {/* Terminal Input Bar */}
-            <form onSubmit={handleTerminalSubmit} className="mt-3 flex gap-2">
-              <div className="flex-1 flex items-center bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-200">
-                <span className="text-sky-400 mr-2">PS C:\Users\alexa\openbase&gt;</span>
-                <input
-                  type="text"
-                  value={terminalInput}
-                  onChange={(e) => setTerminalInput(e.target.value)}
-                  placeholder="Escribe un comando (ej: openbase status) y presiona Enter..."
-                  className="flex-1 bg-transparent outline-none text-white font-mono placeholder:text-slate-600"
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-              >
-                Ejecutar
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Tab Content 3: Win32 Supervisor Explorer */}
-        {activeTab === 'supervisor' && (
-          <div className="p-6 bg-[#0B0F1A]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h4 className="text-sm font-bold text-white">Unidades Activas de Windows (~/.openbase/windows-units)</h4>
-                <p className="text-xs text-slate-400">Procesos desacoplados con banderas CREATE_NEW_PROCESS_GROUP para disponibilidad continua.</p>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                <Shield className="w-3.5 h-3.5" />
-                <span>4 Servicios Operacionales</span>
-              </div>
-            </div>
-
-            {/* Units Table */}
-            <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-900 text-slate-400 border-b border-white/[0.08]">
-                  <tr>
-                    <th className="p-3">UNIDAD</th>
-                    <th className="p-3">PUERTO</th>
-                    <th className="p-3">PID</th>
-                    <th className="p-3">ESTADO</th>
-                    <th className="p-3">MEMORIA RAM</th>
-                    <th className="p-3">UPTIME</th>
-                    <th className="p-3">TIPO</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.06] bg-slate-950/60">
-                  {mockSupervisorUnits.map((u, i) => (
-                    <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="p-3 font-semibold text-sky-300">{u.name}</td>
-                      <td className="p-3 text-slate-300">{u.port}</td>
-                      <td className="p-3 text-slate-400">{u.pid}</td>
-                      <td className="p-3">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          {u.status}
+                  {/* Audio Visualizer Canvas */}
+                  <div className="visualizer-wrapper">
+                    <canvas ref={canvasRef} id="voice-canvas" width="480" height="70" className="visualizer-canvas"></canvas>
+                    <div className="visualizer-overlay">
+                      <span className="active-speaker-pill">
+                        <span className="speaker-role" id="speaker-role-label">{t.speakerRoleLabel}</span>
+                        <span className="speaker-name" id="speaker-name-display">
+                          {isAudioActive ? 'Ingeniero (Tú)' : 'Silenciado (Mute)'}
                         </span>
-                      </td>
-                      <td className="p-3 text-emerald-300 font-semibold">{u.ram}</td>
-                      <td className="p-3 text-slate-400">{u.uptime}</td>
-                      <td className="p-3 text-slate-400">{u.type}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Transcript Stream */}
+                  <div className="transcript-stream" id="transcript-stream">
+                    <div className="chat-bubble user-msg">
+                      <div className="bubble-header">
+                        <span className="sender-name">Tú (Voz)</span>
+                        <span className="bubble-time">17:24:02</span>
+                      </div>
+                      <p className="bubble-text" id="transcript-user-text">
+                        {lang === 'es' ? current.user : current.userEn}
+                      </p>
+                    </div>
+
+                    <div className="chat-bubble agent-msg">
+                      <div className="bubble-header">
+                        <span className="sender-name">Openbase Agent (LiveKit)</span>
+                        <span className="bubble-time">17:24:04</span>
+                      </div>
+                      <p className="bubble-text" id="transcript-agent-text">
+                        {lang === 'es' ? current.agent : current.agentEn}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Simulation Controls Bar */}
+                  <div className="simulation-controls-bar">
+                    <button 
+                      onClick={handleNextScenario}
+                      className="sim-action-btn primary-sim-btn" 
+                      id="sim-trigger-task-btn"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                      </svg>
+                      <span id="sim-btn-text">{t.simBtnText}</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => setIsAudioActive(!isAudioActive)}
+                      className={`sim-action-btn ${isAudioActive ? 'active' : ''}`} 
+                      id="sim-toggle-audio-btn"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                      <span id="sim-audio-text">{t.simAudioText}</span>
+                    </button>
+
+                    <button 
+                      onClick={() => setApproved(true)}
+                      className="sim-action-btn danger-sim-btn" 
+                      id="sim-approve-diff-btn"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span id="sim-approve-text">{approved ? "¡Cambios Aprobados!" : t.simApproveText}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right: Live Code Diff & Windows Execution Stream */}
+                <div className="code-stream-panel">
+                  <div className="code-panel-header">
+                    <div className="file-tab">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span>{current.file}</span>
+                    </div>
+                    <span className="diff-stats">
+                      <span className="diff-add">{current.addStats}</span>
+                      <span className="diff-del">{current.delStats}</span>
+                    </span>
+                  </div>
+
+                  <div className="diff-code-viewer" id="diff-code-viewer">
+                    <pre><code dangerouslySetInnerHTML={{ __html: current.codeHtml }}></code></pre>
+                  </div>
+
+                  <div className="agent-activity-footer">
+                    <div className="activity-status">
+                      <span className="pulse-mini"></span>
+                      <span id="agent-action-desc">
+                        {approved ? "Cambios confirmados en el sistema de archivos NTFS" : (lang === 'es' ? current.actionDesc : current.actionDescEn)}
+                      </span>
+                    </div>
+                    <span className="test-badge pass">PASS 42/42</span>
+                  </div>
+                </div>
+
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* TAB 2: PowerShell 7 Terminal */}
+          {activeTab === 'terminal' && (
+            <div className="tab-panel active">
+              <div className="interactive-terminal">
+                <div className="terminal-body" id="powershell-terminal-output">
+                  <div className="term-row"><span className="term-muted">PowerShell 7.4.2 — Native Windows 11 x64 Subsystem</span></div>
+                  <div className="term-row"><span className="term-muted">Copyright (c) Microsoft Corporation. All rights reserved.</span></div>
+                  <div className="term-row">&nbsp;</div>
+                  <div className="term-row"><span className="term-accent">PS C:\Users\dev\workspace\openbase&gt;</span> <span className="term-cmd">openbase-coder --version</span></div>
+                  <div className="term-row"><span className="term-green">openbase-coder, version 2.4.0 (win32-x86_64-native)</span></div>
+                  <div className="term-row">&nbsp;</div>
+                  <div className="term-row"><span className="term-accent">PS C:\Users\dev\workspace\openbase&gt;</span> <span className="term-cmd">openbase-coder services status</span></div>
+                  <div className="term-row"><span className="term-cyan">┌──────────────────────┬─────────┬─────────┬──────────────┬───────────────┐</span></div>
+                  <div className="term-row"><span className="term-cyan">│ Service Name         │ Status  │ PID     │ Memory (RSS) │ Port / Socket │</span></div>
+                  <div className="term-row"><span className="term-cyan">├──────────────────────┼─────────┼─────────┼──────────────┼───────────────┤</span></div>
+                  <div className="term-row">│ livekit-server.exe   │ <span className="term-green">RUNNING</span> │ 14820   │ 18.4 MB      │ 127.0.0.1:7880│</div>
+                  <div className="term-row">│ django-cli (API)     │ <span className="term-green">RUNNING</span> │ 19204   │ 22.1 MB      │ 127.0.0.1:7999│</div>
+                  <div className="term-row">│ livekit-agent        │ <span className="term-green">RUNNING</span> │ 8912    │ 31.8 MB      │ WebSocket-Sync│</div>
+                  <div className="term-row">│ code-sync-watcher    │ <span className="term-green">RUNNING</span> │ 23041   │ 11.2 MB      │ Win32 ReadDir │</div>
+                  <div className="term-row"><span className="term-cyan">└──────────────────────┴─────────┴─────────┴──────────────┴───────────────┘</span></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Win32 Supervisor Explorer */}
+          {activeTab === 'supervisor' && (
+            <div className="tab-panel active">
+              <div className="interactive-terminal">
+                <div className="terminal-body">
+                  <div className="term-row"><span className="term-muted"># Win32 JSON Service Units Inspector (~/.openbase/windows-units)</span></div>
+                  <div className="term-row"><span className="term-accent">PS C:\Users\dev&gt;</span> <span className="term-cmd">Get-Content ~/.openbase/windows-units/livekit-server.json</span></div>
+                  <div className="term-row">{`{`}</div>
+                  <div className="term-row">&nbsp;&nbsp;<span className="term-cyan">"unit_name"</span>: <span className="term-green">"livekit-server"</span>,</div>
+                  <div className="term-row">&nbsp;&nbsp;<span className="term-cyan">"exec_start"</span>: <span className="term-green">"C:\\Users\\dev\\.openbase\\bin\\livekit-server.exe --dev"</span>,</div>
+                  <div className="term-row">&nbsp;&nbsp;<span className="term-cyan">"creation_flags"</span>: <span className="term-yellow">["DETACHED_PROCESS", "CREATE_NEW_PROCESS_GROUP"]</span>,</div>
+                  <div className="term-row">&nbsp;&nbsp;<span className="term-cyan">"restart_policy"</span>: <span className="term-green">"always"</span>,</div>
+                  <div className="term-row">&nbsp;&nbsp;<span className="term-cyan">"port_probe"</span>: 7999</div>
+                  <div className="term-row">{`}`}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
       </div>
     </section>
   );

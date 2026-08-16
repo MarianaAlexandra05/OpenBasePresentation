@@ -1,125 +1,93 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Globe, Github, Download, Sparkles, Menu, X, Monitor } from 'lucide-react';
 
 export function Navbar({ onOpenWaitlist, onOpenChangelog }) {
   const { lang, toggleLang, t } = useLanguage();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-[#07090E]/80 border-b border-white/[0.08] transition-all">
+    <>
       {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-blue-950/60 via-sky-950/40 to-indigo-950/60 border-b border-sky-500/20 py-2 px-4 text-xs font-medium">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-semibold border border-sky-400/30 text-[11px] uppercase tracking-wider">
-              {t.bannerTag}
-            </span>
-            <span className="text-slate-300">
-              {t.bannerText}
-            </span>
-          </div>
-          <button 
-            onClick={onOpenChangelog}
-            className="text-sky-400 hover:text-sky-300 transition-colors font-semibold flex items-center gap-1 cursor-pointer"
-          >
-            {t.bannerCta}
-          </button>
+      <aside className="announcement-banner" id="announcement-banner">
+        <div className="banner-container">
+          <span className="banner-tag" id="banner-tag">{t.bannerTag}</span>
+          <span className="banner-text" id="banner-text">
+            <strong>Openbase Coder v2.4 para Windows</strong> — Soporte 100% nativo Win32, LiveKit integrado y cero necesidad de Docker.
+          </span>
+          <a href="#quickstart-section" className="banner-link" id="banner-cta">{t.bannerCta}</a>
         </div>
-      </div>
+      </aside>
 
-      {/* Main Navigation */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand */}
-        <a href="#" className="flex items-center gap-3 group text-decoration-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center p-0.5 shadow-lg shadow-blue-500/25 group-hover:scale-105 transition-transform">
-            <svg viewBox="0 0 40 40" fill="none" className="w-full h-full">
-              <rect width="40" height="40" rx="8" fill="#0A0E1A" />
+      {/* Navigation Bar */}
+      <header className="site-header" id="site-header">
+        <nav className="nav-container" aria-label="Navegación principal">
+          <a href="#" className="brand-logo" id="brand-logo" aria-label="Openbase Coder Inicio">
+            <svg className="logo-symbol" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="40" height="40" rx="8" fill="#141824" />
               <path d="M12 12C12 9.79 13.79 8 16 8H21V18H12V12Z" fill="#0078D4" />
               <path d="M21 18H30V24C30 26.21 28.21 28 26 28H21V18Z" fill="#38BDF8" />
               <path d="M23 8H30V15L21 18L23 8Z" fill="#0EA5E9" />
               <path d="M12 21L21 18L19 28H12V21Z" fill="#0284C7" />
             </svg>
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold tracking-tight text-white text-lg">OPENBASE</span>
-              <span className="text-sky-400 font-medium text-xs tracking-wider">CODER</span>
-            </div>
-          </div>
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-mono font-semibold">
-            <Monitor className="w-3 h-3" />
-            WIN32 NATIVE
-          </span>
-        </a>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-          <a href="#overview" className="hover:text-white transition-colors">{t.navOverview}</a>
-          <a href="#demo" className="hover:text-white transition-colors">{t.navDemo}</a>
-          <a href="#how-it-works" className="hover:text-white transition-colors">{t.howEyebrow}</a>
-          <a href="#integrations" className="hover:text-white transition-colors">{t.intEyebrow}</a>
-          <a href="#comparison" className="hover:text-white transition-colors">{t.navComparison}</a>
-          <a href="#diagnostics" className="hover:text-white transition-colors">{t.navDiagnostics}</a>
-          <a href="#install" className="hover:text-white transition-colors">{t.navInstall}</a>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-3">
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLang}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
-            title="Switch Language / Cambiar Idioma"
-            aria-label="Toggle language"
-          >
-            <Globe className="w-3.5 h-3.5 text-sky-400" />
-            <span>{lang.toUpperCase()}</span>
-          </button>
-
-          {/* GitHub Star */}
-          <a
-            href="https://github.com/MarianaAlexandra05/OpenBasePresentation"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-medium text-slate-300 hover:text-white transition-all text-decoration-none"
-          >
-            <Github className="w-3.5 h-3.5" />
-            <span>GitHub</span>
+            <span className="brand-text">OPENBASE <span className="brand-sub">CODER</span></span>
+            <span className="edition-badge" id="edition-badge">
+              <svg className="win-icon" viewBox="0 0 16 16" fill="currentColor" width="12" height="12">
+                <path d="M0 2.25L6.5 1.3V7.5H0V2.25ZM0 8.5H6.5V14.7L0 13.75V8.5ZM7.5 1.15L16 0V7.5H7.5V1.15ZM7.5 8.5H16V16L7.5 14.85V8.5Z" />
+              </svg>
+              WINDOWS NATIVE
+            </span>
           </a>
 
-          {/* Join Beta CTA */}
-          <button
-            onClick={onOpenWaitlist}
-            className="relative px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 border border-sky-400/30 shadow-lg shadow-sky-500/20 transition-all cursor-pointer flex items-center gap-1.5"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-sky-200" />
-            <span>{t.navJoinWaitlist}</span>
-          </button>
+          <div className="nav-links" id="nav-links">
+            <a href="#overview" className="nav-link">{t.navOverview}</a>
+            <a href="#demo" className="nav-link">{t.navDemo}</a>
+            <a href="#comparison" className="nav-link">{t.navComparison}</a>
+            <a href="#features" className="nav-link">{t.navFeatures}</a>
+            <a href="#diagnostics" className="nav-link">{t.navDiagnostics}</a>
+            <a href="#quickstart-section" className="nav-link">{t.navInstall}</a>
+          </div>
 
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg bg-white/[0.05] border border-white/[0.1] text-slate-400 hover:text-white"
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </nav>
+          <div className="nav-actions">
+            {/* Language Switcher */}
+            <button 
+              onClick={toggleLang}
+              className="lang-toggle-btn" 
+              id="lang-toggle-btn" 
+              title="Cambiar idioma (ES/EN)" 
+              aria-label="Cambiar idioma"
+            >
+              <span className="lang-label" id="current-lang">{lang.toUpperCase()}</span>
+              <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </button>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0D111A] border-b border-white/[0.1] px-4 py-4 space-y-3">
-          <a href="#overview" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.navOverview}</a>
-          <a href="#demo" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.navDemo}</a>
-          <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.howEyebrow}</a>
-          <a href="#integrations" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.intEyebrow}</a>
-          <a href="#comparison" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.navComparison}</a>
-          <a href="#diagnostics" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.navDiagnostics}</a>
-          <a href="#install" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm text-slate-300 hover:text-white">{t.navInstall}</a>
-        </div>
-      )}
-    </header>
+            <a 
+              href="https://github.com/MarianaAlexandra05/OpenBasePresentation" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="github-btn" 
+              id="github-header-link" 
+              aria-label="Repositorio en GitHub"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+              </svg>
+              <span className="github-text">Star en GitHub</span>
+            </a>
+
+            <button 
+              onClick={onOpenWaitlist}
+              className="primary-btn nav-download-btn" 
+              id="nav-download-cta"
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                <path d="M0 2.25L6.5 1.3V7.5H0V2.25ZM0 8.5H6.5V14.7L0 13.75V8.5ZM7.5 1.15L16 0V7.5H7.5V1.15ZM7.5 8.5H16V16L7.5 14.85V8.5Z" />
+              </svg>
+              <span id="nav-btn-text">{t.navBtnText}</span>
+            </button>
+          </div>
+        </nav>
+      </header>
+    </>
   );
 }

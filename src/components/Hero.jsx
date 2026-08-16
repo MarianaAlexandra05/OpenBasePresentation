@@ -1,137 +1,96 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Terminal, Copy, Check, Play, Download, Zap, Cpu, Activity, ShieldCheck } from 'lucide-react';
 
 export function Hero({ onOpenWaitlist }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
-
   const command = "uv tool install openbase-coder";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(command);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <section id="overview" className="relative pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-      <div className="text-center max-w-4xl mx-auto">
-        {/* Border Beam Pill Badge */}
-        <div className="inline-block relative rounded-full p-[1px] mb-6 overflow-hidden">
-          <div className="bb-wrap" aria-hidden="true">
-            <div className="bb-beam bb-beam-1"></div>
-            <div className="bb-beam bb-beam-2"></div>
-          </div>
-          <div className="glass-pill bg-slate-900/80 text-slate-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-xs font-semibold tracking-wide uppercase text-sky-400">
-              {t.heroBadgeText}
-            </span>
-          </div>
+    <section className="hero-section" id="overview">
+      <div className="hero-content">
+        <div className="pill-badge" id="hero-pill-badge">
+          <span className="badge-dot"></span>
+          <span id="hero-badge-text">{t.heroBadgeText}</span>
         </div>
 
-        {/* Hero Headline with Instrument Serif */}
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.15]">
-          {t.heroTitlePart1}{' '}
-          <span className="block mt-2">
-            {t.heroTitlePart2}{' '}
-            <span className="it text-sky-300 font-normal">{t.heroTitlePart2Italic}</span>
-          </span>
+        <h1 className="hero-title" id="hero-title">
+          El IDE de Voz para Ingeniería Real.<br />
+          <span className="hero-gradient-text">Ahora 100% Nativo en Windows.</span>
         </h1>
 
-        {/* Hero Description */}
-        <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto mb-10 font-normal leading-relaxed">
-          {t.heroDescription}
+        <p className="hero-description" id="hero-description">
+          Antes requería Docker y máquinas virtuales pesadas. Hoy Openbase Coder se ejecuta directamente en el kernel de Windows: supervisor de servicios Win32 desacoplado, motor de voz LiveKit en tiempo real, integración fluida con PowerShell y cero latencia.
         </p>
 
-        {/* Hero Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-          <a
-            href="#install"
-            className="btn-primary px-8 py-3.5 text-base shadow-xl shadow-blue-500/25 group text-decoration-none"
-          >
-            <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
-            <span>{t.heroBtnDownload}</span>
+        <div className="hero-actions">
+          <a href="#quickstart-section" className="primary-btn hero-main-btn" id="hero-primary-cta">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+            </svg>
+            <span id="hero-btn-download">{t.heroBtnDownload}</span>
           </a>
 
-          <a
-            href="#demo"
-            className="btn-secondary px-7 py-3.5 text-base group text-decoration-none"
-          >
-            <Play className="w-4 h-4 text-sky-400 group-hover:scale-110 transition-transform" />
-            <span>{t.heroBtnDemo}</span>
+          <a href="#demo" className="secondary-btn" id="hero-secondary-cta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="hero-btn-demo">{t.heroBtnDemo}</span>
           </a>
         </div>
 
         {/* Quick Copy Command Bar */}
-        <div className="inline-flex items-center gap-3 bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 shadow-2xl backdrop-blur-md mb-12">
-          <div className="flex items-center gap-2 text-sky-400 font-mono text-xs">
-            <Terminal className="w-4 h-4" />
-            <span className="text-slate-500">PS C:\&gt;</span>
+        <div className="quick-terminal-bar" id="quick-terminal-bar">
+          <div className="term-prefix">
+            <svg className="powershell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <span>PS C:\&gt;</span>
           </div>
-          <code className="font-mono text-sm text-slate-200 selection:bg-blue-600">
-            {command}
-          </code>
-          <button
+          <code className="term-command" id="hero-code-command">{command}</code>
+          <button 
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-mono text-slate-300 hover:text-white transition-all cursor-pointer"
-            title={copied ? t.heroCopied : t.heroCopyHint}
+            className={`copy-btn ${copied ? 'copied' : ''}`} 
+            id="hero-copy-btn" 
+            aria-label="Copiar comando de instalación"
           >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400 font-semibold">{t.heroCopied}</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
-                <span>Copy</span>
-              </>
-            )}
+            <svg className="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span className="copy-tooltip" id="hero-copy-tooltip">
+              {copied ? "¡Copiado!" : "Copiar"}
+            </span>
           </button>
         </div>
 
-        {/* Tech Specs Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto text-left">
-          <div className="glass-card p-4 rounded-xl border border-white/[0.08] flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 shrink-0">
-              <Zap className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">{t.specEngine}</div>
-              <div className="text-sm font-semibold text-slate-200 mt-0.5">{t.specEngineVal}</div>
-            </div>
+        {/* Tech Spec Highlights */}
+        <div className="tech-spec-bar" id="tech-spec-bar">
+          <div className="spec-item">
+            <span className="spec-label" id="spec-engine-lbl">{t.specEngine}</span>
+            <span className="spec-value">Win32 Supervisor + JSON Units</span>
           </div>
-
-          <div className="glass-card p-4 rounded-xl border border-white/[0.08] flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0">
-              <Cpu className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">{t.specMemory}</div>
-              <div className="text-sm font-semibold text-emerald-400 mt-0.5">{t.specMemoryVal}</div>
-            </div>
+          <div className="spec-divider"></div>
+          <div className="spec-item">
+            <span className="spec-label" id="spec-memory-lbl">{t.specMemory}</span>
+            <span className="spec-value highlight-green">&lt; 45 MB en reposo (-88%)</span>
           </div>
-
-          <div className="glass-card p-4 rounded-xl border border-white/[0.08] flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-400 shrink-0">
-              <Activity className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">{t.specVoice}</div>
-              <div className="text-sm font-semibold text-sky-300 mt-0.5">{t.specVoiceVal}</div>
-            </div>
+          <div className="spec-divider"></div>
+          <div className="spec-item">
+            <span className="spec-label" id="spec-voice-lbl">{t.specVoice}</span>
+            <span className="spec-value highlight-blue">Sub-20ms DirectSound / WASAPI</span>
           </div>
-
-          <div className="glass-card p-4 rounded-xl border border-white/[0.08] flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 shrink-0">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">{t.specDocker}</div>
-              <div className="text-sm font-semibold text-purple-300 mt-0.5">{t.specDockerVal}</div>
-            </div>
+          <div className="spec-divider"></div>
+          <div className="spec-item">
+            <span className="spec-label" id="spec-docker-lbl">{t.specDocker}</span>
+            <span className="spec-value highlight-green">0% (Innecesario)</span>
           </div>
         </div>
       </div>

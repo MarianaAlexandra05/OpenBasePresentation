@@ -1,111 +1,126 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Cpu, Zap, Box, ShieldCheck, Check, X, ArrowRight } from 'lucide-react';
 
 export function ArchitectureComparison() {
   const { t } = useLanguage();
 
-  const comparisonRows = [
-    {
-      metric: "Consumo de Memoria RAM",
-      metricEn: "RAM Memory Footprint",
-      docker: "4,000 MB (VM Docker Desktop)",
-      native: "< 45 MB en reposo (-88%)",
-      winIcon: true
-    },
-    {
-      metric: "Tiempo de Arranque del IDE",
-      metricEn: "Cold Boot Time",
-      docker: "45 - 90 segundos (Hyper-V / WSL2)",
-      native: "< 0.4 segundos (Proceso Win32)",
-      winIcon: true
-    },
-    {
-      metric: "Latencia de Audio en Vivo",
-      metricEn: "Real-time Voice Latency",
-      docker: "180 - 320 ms (Puente de red virtual)",
-      native: "Sub-20 ms (DirectSound / WASAPI)",
-      winIcon: true
-    },
-    {
-      metric: "Bloqueo Concurrente de Archivos",
-      metricEn: "Concurrent File Locking",
-      docker: "Inestable en monturas 9P/SMB",
-      native: "Nativo con msvcrt.locking en NTFS",
-      winIcon: true
-    },
-    {
-      metric: "Supervisor de Servicios",
-      metricEn: "Service Supervisor",
-      docker: "Docker Compose / Daemon Linux",
-      native: "JSON Units (~/.openbase/windows-units)",
-      winIcon: true
-    },
-    {
-      metric: "Soporte de Terminales",
-      metricEn: "Native Terminal Support",
-      docker: "Limitado dentro del contenedor",
-      native: "PowerShell 7, CMD, Warp & Windows Terminal",
-      winIcon: true
-    }
-  ];
-
   return (
-    <section id="comparison" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-left">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <div className="inline-flex items-center gap-2 text-sky-400 text-xs font-bold tracking-widest uppercase mb-3">
-          <span className="w-1.5 h-1.5 bg-sky-400 rounded-sm"></span>
-          <span>{t.compTag}</span>
-        </div>
-        <h2 className="text-3xl sm:text-5xl font-extrabold text-white">
-          {t.compTitle}
-        </h2>
-        <p className="text-slate-300 text-base sm:text-lg mt-4 leading-relaxed">
+    <section className="comparison-section" id="comparison">
+      <div className="section-header">
+        <span className="section-tag" id="comp-tag">{t.compTag}</span>
+        <h2 className="section-title" id="comp-title">{t.compTitle}</h2>
+        <p className="section-desc" id="comp-desc">
           {t.compDesc}
         </p>
       </div>
 
-      {/* Comparison Table */}
-      <div className="glass-card rounded-2xl border border-white/[0.12] overflow-hidden max-w-5xl mx-auto shadow-2xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900/90 border-b border-white/[0.1] text-xs uppercase font-bold tracking-wider text-slate-300">
-              <tr>
-                <th className="p-4 sm:p-6 w-1/3">Capacidad Técnica</th>
-                <th className="p-4 sm:p-6 text-slate-400 w-1/3">
-                  <div className="flex items-center gap-2">
-                    <Box className="w-4 h-4 text-slate-500" />
-                    <span>{t.compDockerHead}</span>
-                  </div>
-                </th>
-                <th className="p-4 sm:p-6 text-sky-300 bg-blue-600/10 border-l border-blue-500/20 w-1/3">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-sky-400" />
-                    <span>{t.compNativeHead}</span>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.06] bg-slate-950/60">
-              {comparisonRows.map((row, idx) => (
-                <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="p-4 sm:p-6 font-semibold text-slate-200">
-                    {row.metric}
-                  </td>
-                  <td className="p-4 sm:p-6 text-slate-400 font-mono text-xs flex items-center gap-2">
-                    <X className="w-4 h-4 text-rose-500 shrink-0" />
-                    <span>{row.docker}</span>
-                  </td>
-                  <td className="p-4 sm:p-6 font-mono text-xs font-semibold text-emerald-300 bg-blue-600/5 border-l border-blue-500/20">
-                    <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-400 stroke-[3] shrink-0" />
-                      <span>{row.native}</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="comparison-grid">
+        {/* Legacy Docker Container Column */}
+        <div className="comparison-column">
+          <div className="comparison-column-header">
+            <h3 className="text-white font-bold text-lg">Versión Legacy (Docker / VM)</h3>
+            <span className="col-tag legacy">DEPRECADO</span>
+          </div>
+
+          <div className="comparison-metrics-list">
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name" id="metric-ram-title">{t.metricRamTitle}</span>
+                <span className="metric-stat bad">~ 4,000 MB</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill legacy" style={{ width: '92%' }}></div>
+              </div>
+              <span className="metric-desc" id="metric-ram-sub">{t.metricRamSub}</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name" id="metric-lat-title">{t.metricLatTitle}</span>
+                <span className="metric-stat bad">180 - 320 ms</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill legacy" style={{ width: '78%' }}></div>
+              </div>
+              <span className="metric-desc" id="metric-lat-sub">{t.metricLatSub}</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name" id="metric-vm-title">{t.metricVmTitle}</span>
+                <span className="metric-stat bad">45 - 90 segs</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill legacy" style={{ width: '85%' }}></div>
+              </div>
+              <span className="metric-desc" id="metric-vm-sub">{t.metricVmSub}</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name" id="metric-compat-title">{t.metricCompatTitle}</span>
+                <span className="metric-stat bad">Aislado en Linux</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill legacy" style={{ width: '40%' }}></div>
+              </div>
+              <span className="metric-desc" id="metric-compat-sub">{t.metricCompatSub}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Windows Native Column */}
+        <div className="comparison-column native-highlight">
+          <div className="comparison-column-header">
+            <h3 className="text-white font-bold text-lg">Nueva Versión Windows Nativa (v2.4)</h3>
+            <span className="col-tag native">RECOMENDADO</span>
+          </div>
+
+          <div className="comparison-metrics-list">
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name">{t.metricRamTitle}</span>
+                <span className="metric-stat good">&lt; 45 MB (-88%)</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill native" style={{ width: '12%' }}></div>
+              </div>
+              <span className="metric-desc">Servicio en segundo plano ligero y ultra optimizado.</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name">{t.metricLatTitle}</span>
+                <span className="metric-stat good">Sub-20 ms (WASAPI)</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill native" style={{ width: '95%' }}></div>
+              </div>
+              <span className="metric-desc">Procesamiento de audio PCM directo sin puentes virtuales.</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name">{t.metricVmTitle}</span>
+                <span className="metric-stat good">0 segs (Instantáneo)</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill native" style={{ width: '99%' }}></div>
+              </div>
+              <span className="metric-desc">Arranque inmediato sin máquinas virtuales ni Hyper-V.</span>
+            </div>
+
+            <div className="comparison-metric-card">
+              <div className="metric-header">
+                <span className="metric-name">{t.metricCompatTitle}</span>
+                <span className="metric-stat good">100% Nativo Windows</span>
+              </div>
+              <div className="meter-container">
+                <div className="meter-bar meter-fill native" style={{ width: '100%' }}></div>
+              </div>
+              <span className="metric-desc">Integrado con PowerShell, VS Code y Windows Terminal.</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
